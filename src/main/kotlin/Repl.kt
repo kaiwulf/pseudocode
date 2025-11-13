@@ -165,8 +165,8 @@ class Repl {
     private fun wrapInAlgorithm(code: String): String {
         // Check if it's just an expression (no assignment, no control flow)
         val trimmed = code.trim()
-//        val isExpression = !trimmed.contains("<-") &&
-        val isExpression = !trimmed.contains("←") &&  // This may need to be modified to contain both '←' and '<-'
+        val isExpression = !trimmed.contains("<-") &&
+                !trimmed.contains("←")  // This may need to be modified to contain both '←' and '<-'
                 !trimmed.startsWith("if ") &&
                 !trimmed.startsWith("while ") &&
                 !trimmed.startsWith("for ") &&

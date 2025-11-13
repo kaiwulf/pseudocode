@@ -1,4 +1,5 @@
 import org.opency.pseudocode.grammar.pseudocodeBaseVisitor
+import org.opency.pseudocode.grammar.pseudocodeLexer
 import org.opency.pseudocode.grammar.pseudocodeParser
 import kotlin.text.get
 
@@ -145,11 +146,11 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
     override fun visitExpression(ctx: pseudocodeParser.ExpressionContext): Value {
         println("Visiting expression: ${ctx.text}")
         // Floor/ceiling
-        if (ctx.getChild(0).text == "⌊") {
+        if (ctx.FLOOR_OPEN() != null) {
             val value = visit(ctx.expression(0)).toKotlinDouble()
             return Value.Number(kotlin.math.floor(value))
         }
-        if (ctx.getChild(0).text == "⌈") {
+        if (ctx.CEIL_OPEN() != null) {
             val value = visit(ctx.expression(0)).toKotlinDouble()
             return Value.Number(kotlin.math.ceil(value))
         }
@@ -159,6 +160,13 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
             val left = visit(ctx.expression(0))
             val right = visit(ctx.expression(1))
             val op = ctx.getChild(1).text
+
+            if(ctx.NOT_IN() != null) {
+                    val set = right as? Value.Set
+                        ?: throw RuntimeException("∉ requires a set on right side")
+//                    Value.Boolean(!set.elements.contains(left))
+                return Value.Boolean(!set.elements.contains(left))
+            }
 
             return when (op) {
                 "+", "-", "×", "*", "÷", "/" -> {
@@ -172,37 +180,41 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
                         else -> throw RuntimeException("Unknown operator: $op")
                     })
                 }
-                "=", "≠", "<", ">", "≤", "≥" -> {
+                "=", "≠", "<", ">", "≤", "≥", "<>", "<=", ">=" -> {
                     val l = left.toKotlinDouble()
                     val r = right.toKotlinDouble()
                     Value.Boolean(when (op) {
                         "=" -> l == r
                         "≠" -> l != r
+                        "<>" -> l != r
                         "<" -> l < r
                         ">" -> l > r
                         "≤" -> l <= r
+                        "<=" -> l <= r
                         "≥" -> l >= r
+                        ">=" -> l >= r
                         else -> throw RuntimeException("Unknown operator: $op")
                     })
                 }
-                "∈" -> {
+                "∈", "in" -> {
                     val set = right as? Value.Set
                         ?: throw RuntimeException("∈ requires a set on right side")
                     Value.Boolean(set.elements.contains(left))
                 }
-                "∉" -> {
-                    val set = right as? Value.Set
-                        ?: throw RuntimeException("∉ requires a set on right side")
-                    Value.Boolean(!set.elements.contains(left))
-                }
-                "∪" -> {
+//                "∉" -> {
+//                pseudocodeLexer.NOT_IN -> {
+//                    val set = right as? Value.Set
+//                        ?: throw RuntimeException("∉ requires a set on right side")
+//                    Value.Boolean(!set.elements.contains(left))
+//                }
+                "∪" , "|"-> {
                     val leftSet = left as? Value.Set
                         ?: throw RuntimeException("∪ requires sets")
                     val rightSet = right as? Value.Set
                         ?: throw RuntimeException("∪ requires sets")
                     Value.Set((leftSet.elements + rightSet.elements).toMutableSet())
                 }
-                "∩" -> {
+                "∩", "&" -> {
                     val leftSet = left as? Value.Set
                         ?: throw RuntimeException("∩ requires sets")
                     val rightSet = right as? Value.Set
@@ -262,7 +274,7 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
             ctx.text == "true" -> Value.Boolean(true)
             ctx.text == "false" -> Value.Boolean(false)
             ctx.text == "null" -> Value.Null
-            ctx.text == "∞" -> Value.Infinity
+            ctx.text == "∞" || ctx.text == "inf" -> Value.Infinity
             ctx.text == "∅" -> Value.EmptySet
             ctx.expression() != null -> visit(ctx.expression())
             ctx.getChild(0).text == "[" -> {
@@ -270,6 +282,15 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
                 val elements = ctx.argList()?.expression()?.map { visit(it) }?.toMutableList()
                     ?: mutableListOf()
                 Value.Array(elements)
+            }
+            ctx.getChild(0).text == "{" -> {
+                // Set literal
+                if(ctx.setElements() == null) {
+                    Value.EmptySet  // {}
+                } else {
+                    val elements = ctx.setElements().expression().map { visit(it) }.toMutableSet()
+                    Value.Set(elements)
+                }
             }
             else -> throw RuntimeException("Unknown primary: ${ctx.text}")
         }

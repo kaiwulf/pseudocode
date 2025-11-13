@@ -28,8 +28,8 @@ statement
     ;
 
 assignment
-    : ID '←' expression
-    | ID '[' expression ']' '←' expression
+    : ID ASSIGN expression
+    | ID '[' expression ']' ASSIGN expression
     ;
 
 ifStatement
@@ -61,19 +61,21 @@ expressionStatement
     ;
 
 expression
-    : '⌊' expression '⌋'
-    | '⌈' expression '⌉'
-    | expression ('×' | '*' | '÷' | '/') expression
-    | expression ('+' | '-') expression
-    | expression ('=' | '≠' | '<' | '>' | '≤' | '≥') expression
-    | expression ('∈' | '∉') expression
-    | expression ('∪' | '∩') expression
+    : FLOOR_OPEN  expression FLOOR_CLOSE
+    | CEIL_OPEN expression CEIL_CLOSE
+    | expression ( TIMES | DIV ) expression
+    | expression (PLUS | MINUS) expression
+    | expression (EQ | NEQ | LT | GT | LEQ | GEQ) expression
+    | expression (IN | NOT_IN) expression
+    | expression (UNION | INTERSECT) expression
     | ID '(' argList? ')'  // function call
     | ID '[' arrayList ']'  // array access
     | primary
     ;
 
-
+setElements
+    : expression (',' expression)*
+    ;
 
 arrayList
     : NUMBER
@@ -89,19 +91,50 @@ primary
     | 'true'
     | 'false'
     | 'null'
-    | '∞'
-    | '∅'
+    | INFINITY
+    | EMPTY_SET
     | '(' expression ')'
     | '[' argList? ']'  // array literal
+    | '{' setElements? '}'  // set literal
     ;
 
 argList
     : expression (',' expression)*
     ;
 
+// TOKENS
+INFINITY     : '∞' | 'inf' ;
+EMPTY_SET    : '∅' ;
+ASSIGN       : '←' | '<-' ;
+IN           : '∈' | 'in' ;
+NOT_IN       : '∉' | 'not' [ \t]+ 'in' ;
+UNION        : '∪' | '|' ;
+INTERSECT    : '∩' | '&' ;
+
+// Floor and Ceiling
+FLOOR_OPEN   : '⌊' | '[\\' ;
+FLOOR_CLOSE  : '⌋' | '/]' ;
+CEIL_OPEN    : '⌈' | '{|' ;
+CEIL_CLOSE   : '⌉' | '|}' ;
+
+// Comparison operators
+EQ           : '=' ;
+NEQ          : '≠' | '<>' ;
+LT           : '<' ;
+GT           : '>' ;
+LEQ          : '≤' | '<=' ;
+GEQ          : '≥' | '>=' ;
+
+// Arithmetic operators
+PLUS         : '+' ;
+MINUS        : '-' ;
+TIMES        : '×' | '*' ;
+DIV          : '÷' | '/' ;
+
 ID : [a-zA-Z_][a-zA-Z0-9_]* ;
 BOOL : ('true'|'false') ;
 NUMBER : [0-9]+ ('.' [0-9]+)? ;
 STRING : '"' (~["\r\n])* '"' ;
 WS : [ \t\r\n]+ -> skip ;
-COMMENT : '//' ~[\r\n]* -> skip ;
+COMMENT : ';' ~[\r\n]* -> skip ;
+MULTI_COMMENT  : '(-' .*? '-)' -> skip ;
