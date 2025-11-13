@@ -138,6 +138,16 @@ public interface pseudocodeListener extends ParseTreeListener {
 	 */
 	void exitExpression(pseudocodeParser.ExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link pseudocodeParser#arrayList}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayList(pseudocodeParser.ArrayListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link pseudocodeParser#arrayList}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayList(pseudocodeParser.ArrayListContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link pseudocodeParser#primary}.
 	 * @param ctx the parse tree
 	 */

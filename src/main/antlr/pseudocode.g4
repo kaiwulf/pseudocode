@@ -61,8 +61,7 @@ expressionStatement
     ;
 
 expression
-    : primary
-    | '⌊' expression '⌋'
+    : '⌊' expression '⌋'
     | '⌈' expression '⌉'
     | expression ('×' | '*' | '÷' | '/') expression
     | expression ('+' | '-') expression
@@ -70,7 +69,17 @@ expression
     | expression ('∈' | '∉') expression
     | expression ('∪' | '∩') expression
     | ID '(' argList? ')'  // function call
-    | ID '[' expression ']'  // array access
+    | ID '[' arrayList ']'  // array access
+    | primary
+    ;
+
+
+
+arrayList
+    : NUMBER
+    | STRING
+    | BOOL
+    | 'null'
     ;
 
 primary
@@ -91,6 +100,7 @@ argList
     ;
 
 ID : [a-zA-Z_][a-zA-Z0-9_]* ;
+BOOL : ('true'|'false') ;
 NUMBER : [0-9]+ ('.' [0-9]+)? ;
 STRING : '"' (~["\r\n])* '"' ;
 WS : [ \t\r\n]+ -> skip ;

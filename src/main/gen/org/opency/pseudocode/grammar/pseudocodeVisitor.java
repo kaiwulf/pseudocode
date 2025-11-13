@@ -89,6 +89,12 @@ public interface pseudocodeVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpression(pseudocodeParser.ExpressionContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link pseudocodeParser#arrayList}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitArrayList(pseudocodeParser.ArrayListContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link pseudocodeParser#primary}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

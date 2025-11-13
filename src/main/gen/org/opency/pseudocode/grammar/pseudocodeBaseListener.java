@@ -173,6 +173,18 @@ public class pseudocodeBaseListener implements pseudocodeListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterArrayList(pseudocodeParser.ArrayListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitArrayList(pseudocodeParser.ArrayListContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterPrimary(pseudocodeParser.PrimaryContext ctx) { }
 	/**
 	 * {@inheritDoc}

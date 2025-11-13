@@ -28,12 +28,6 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
         // Visit all algorithm declarations
         ctx.algorithmDecl().forEach { visit(it) }
 
-        // Look for and execute a "main" algorithm if it exists
-//        val main = globalEnv.get("main")
-//        if (main is Value.Function) {
-//            return callFunction(main, emptyList())
-//        }
-
         return Value.Null
     }
 
@@ -149,6 +143,7 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
     }
 
     override fun visitExpression(ctx: pseudocodeParser.ExpressionContext): Value {
+        println("Visiting expression: ${ctx.text}")
         // Floor/ceiling
         if (ctx.getChild(0).text == "⌊") {
             val value = visit(ctx.expression(0)).toKotlinDouble()
@@ -219,10 +214,14 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
         }
 
         // Function call
+        println(ctx.ID())
+        println(ctx.argList())
         if (ctx.ID() != null && ctx.argList() != null) {
+            println("Inside function call")
             val funcName = ctx.ID().text
             val func = currentEnv.get(funcName)
             val args = ctx.argList()?.expression()?.map { visit(it) } ?: emptyList()
+            args.forEach { println(it.toString()) }
 
             return when (func) {
                 is Value.Function -> callFunction(func, args)
@@ -256,7 +255,10 @@ class Interpreter : pseudocodeBaseVisitor<Value>() {
                 val text = ctx.STRING().text
                 Value.String(text.substring(1, text.length - 1)) // Remove quotes
             }
-            ctx.ID() != null -> currentEnv.get(ctx.ID().text)
+            ctx.ID() != null -> {
+                println("ctx id is: ${ ctx.ID().text }")
+                currentEnv.get(ctx.ID().text)
+            }
             ctx.text == "true" -> Value.Boolean(true)
             ctx.text == "false" -> Value.Boolean(false)
             ctx.text == "null" -> Value.Null
